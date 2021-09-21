@@ -4,7 +4,7 @@ use hir::{
     ModuleDef, PathResolution, PrefixKind, ScopeDef, Semantics, Type,
 };
 use itertools::Itertools;
-use rustc_hash::FxHashSet;
+use rustc_hash::{FxHashMap, FxHashSet};
 use syntax::{
     ast::{self, NameOwner},
     utils::path_to_string_stripping_turbo_fish,
@@ -17,6 +17,8 @@ use crate::{
 };
 
 use super::item_name;
+
+use std::cell::RefCell;
 
 /// A candidate for import, derived during various IDE activities:
 /// * completion with imports on the fly proposals
@@ -222,13 +224,17 @@ impl ImportAssets {
 
         let scope_definitions = self.scope_definitions(sema);
         let current_crate = self.module_with_candidate.krate();
+        let item_to_path_cache = RefCell::new(FxHashMap::default());
         let mod_path = |item| {
-            get_mod_path(
-                sema.db,
-                item_for_path_search(sema.db, item)?,
-                &self.module_with_candidate,
-                prefixed,
-            )
+            if !item_to_path_cache.borrow().contains_key(&item) {
+                item_to_path_cache.borrow_mut().insert(item, get_mod_path(
+                    sema.db,
+                    item_for_path_search(sema.db, item)?,
+                    &self.module_with_candidate,
+                    prefixed,
+                ));
+            }
+            item_to_path_cache.borrow().get(&item).unwrap().clone()
         };
 
         match &self.import_candidate {
