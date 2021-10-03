@@ -12,8 +12,10 @@ pub mod make;
 
 use std::marker::PhantomData;
 
+use rowan::Language;
+
 use crate::{
-    syntax_node::{SyntaxNode, SyntaxNodeChildren, SyntaxToken},
+    syntax_node::{RustLanguage, SyntaxNode, SyntaxNodeChildrenMatching, SyntaxToken},
     SyntaxKind,
 };
 
@@ -44,6 +46,13 @@ pub trait AstNode {
     where
         Self: Sized;
 
+    fn can_cast_rowan(kind: rowan::SyntaxKind) -> bool
+    where
+        Self: Sized,
+    {
+        Self::can_cast(RustLanguage::kind_from_raw(kind))
+    }
+
     fn cast(syntax: SyntaxNode) -> Option<Self>
     where
         Self: Sized;
@@ -69,6 +78,13 @@ pub trait AstToken {
     where
         Self: Sized;
 
+    fn can_cast_rowan(kind: rowan::SyntaxKind) -> bool
+    where
+        Self: Sized,
+    {
+        Self::can_cast(RustLanguage::kind_from_raw(kind))
+    }
+
     fn cast(syntax: SyntaxToken) -> Option<Self>
     where
         Self: Sized;
@@ -81,30 +97,32 @@ pub trait AstToken {
 }
 
 /// An iterator over `SyntaxNode` children of a particular AST type.
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub struct AstChildren<N> {
-    inner: SyntaxNodeChildren,
+    inner: SyntaxNodeChildrenMatching,
     ph: PhantomData<N>,
 }
 
-impl<N> AstChildren<N> {
+impl<N: AstNode> AstChildren<N> {
     fn new(parent: &SyntaxNode) -> Self {
-        AstChildren { inner: parent.children(), ph: PhantomData }
+        AstChildren { inner: parent.children_matching(N::can_cast_rowan), ph: PhantomData }
     }
 }
 
 impl<N: AstNode> Iterator for AstChildren<N> {
     type Item = N;
     fn next(&mut self) -> Option<N> {
-        self.inner.find_map(N::cast)
+        self.inner.next().map(|it| N::cast(it).unwrap())
     }
 }
 
 mod support {
-    use super::{AstChildren, AstNode, SyntaxKind, SyntaxNode, SyntaxToken};
+    use super::{
+        AstChildren, AstNode, Language, RustLanguage, SyntaxKind, SyntaxNode, SyntaxToken,
+    };
 
     pub(super) fn child<N: AstNode>(parent: &SyntaxNode) -> Option<N> {
-        parent.children_matching(N::can_cast).next().map(|it| N::cast(it).unwrap())
+        parent.children_matching(N::can_cast_rowan).next().map(|it| N::cast(it).unwrap())
     }
 
     pub(super) fn children<N: AstNode>(parent: &SyntaxNode) -> AstChildren<N> {
@@ -112,7 +130,9 @@ mod support {
     }
 
     pub(super) fn token(parent: &SyntaxNode, kind: SyntaxKind) -> Option<SyntaxToken> {
-        parent.children_with_tokens().filter_map(|it| it.into_token()).find(|it| it.kind() == kind)
+        parent
+            .children_with_tokens_matching(&move |it| it == RustLanguage::kind_to_raw(kind))
+            .find_map(|it| it.into_token())
     }
 }
 

@@ -53,7 +53,7 @@ pub use crate::{
     syntax_error::SyntaxError,
     syntax_node::{
         PreorderWithTokens, SyntaxElement, SyntaxElementChildren, SyntaxNode, SyntaxNodeChildren,
-        SyntaxToken, SyntaxTreeBuilder,
+        SyntaxNodeChildrenMatching, SyntaxToken, SyntaxTreeBuilder,
     },
     token_text::TokenText,
 };
