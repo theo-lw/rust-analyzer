@@ -104,7 +104,7 @@ mod support {
     use super::{AstChildren, AstNode, SyntaxKind, SyntaxNode, SyntaxToken};
 
     pub(super) fn child<N: AstNode>(parent: &SyntaxNode) -> Option<N> {
-        parent.children().find_map(N::cast)
+        parent.children_matching(N::can_cast).next().map(|it| N::cast(it).unwrap())
     }
 
     pub(super) fn children<N: AstNode>(parent: &SyntaxNode) -> AstChildren<N> {
