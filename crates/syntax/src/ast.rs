@@ -131,7 +131,8 @@ mod support {
 
     pub(super) fn token(parent: &SyntaxNode, kind: SyntaxKind) -> Option<SyntaxToken> {
         parent
-            .children_with_tokens().by_kind(&move |it| it == RustLanguage::kind_to_raw(kind))
+            .children_with_tokens()
+            .by_kind(&move |it| it == RustLanguage::kind_to_raw(kind))
             .find_map(|it| it.into_token())
     }
 }
