@@ -105,7 +105,7 @@ pub struct AstChildren<N> {
 
 impl<N: AstNode> AstChildren<N> {
     fn new(parent: &SyntaxNode) -> Self {
-        AstChildren { inner: parent.children_matching(N::can_cast_rowan), ph: PhantomData }
+        AstChildren { inner: parent.children().by_kind(N::can_cast_rowan), ph: PhantomData }
     }
 }
 
@@ -122,7 +122,7 @@ mod support {
     };
 
     pub(super) fn child<N: AstNode>(parent: &SyntaxNode) -> Option<N> {
-        parent.children_matching(N::can_cast_rowan).next().map(|it| N::cast(it).unwrap())
+        parent.children().by_kind(N::can_cast_rowan).next().map(|it| N::cast(it).unwrap())
     }
 
     pub(super) fn children<N: AstNode>(parent: &SyntaxNode) -> AstChildren<N> {
@@ -131,7 +131,7 @@ mod support {
 
     pub(super) fn token(parent: &SyntaxNode, kind: SyntaxKind) -> Option<SyntaxToken> {
         parent
-            .children_with_tokens_matching(&move |it| it == RustLanguage::kind_to_raw(kind))
+            .children_with_tokens().by_kind(&move |it| it == RustLanguage::kind_to_raw(kind))
             .find_map(|it| it.into_token())
     }
 }

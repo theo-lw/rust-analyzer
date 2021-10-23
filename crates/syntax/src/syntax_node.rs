@@ -30,7 +30,7 @@ pub type SyntaxNode = rowan::SyntaxNode<RustLanguage>;
 pub type SyntaxToken = rowan::SyntaxToken<RustLanguage>;
 pub type SyntaxElement = rowan::SyntaxElement<RustLanguage>;
 pub type SyntaxNodeChildren = rowan::SyntaxNodeChildren<RustLanguage>;
-pub type SyntaxNodeChildrenMatching = rowan::SyntaxNodeChildrenMatching<RustLanguage>;
+pub type SyntaxNodeChildrenMatching = rowan::SyntaxNodeChildrenMatching<fn(rowan::SyntaxKind) -> bool, RustLanguage>;
 pub type SyntaxElementChildren = rowan::SyntaxElementChildren<RustLanguage>;
 pub type PreorderWithTokens = rowan::api::PreorderWithTokens<RustLanguage>;
 
