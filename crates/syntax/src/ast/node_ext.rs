@@ -54,6 +54,7 @@ impl ast::BlockExpr {
     pub fn statements(&self) -> impl Iterator<Item = ast::Stmt> {
         self.stmt_list().into_iter().flat_map(|it| it.statements())
     }
+
     pub fn tail_expr(&self) -> Option<ast::Expr> {
         self.stmt_list()?.tail_expr()
     }

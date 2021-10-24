@@ -15,7 +15,7 @@ use std::marker::PhantomData;
 use rowan::Language;
 
 use crate::{
-    syntax_node::{RustLanguage, SyntaxNode, SyntaxNodeChildrenMatching, SyntaxToken},
+    syntax_node::{RustLanguage, SyntaxNode, SyntaxNodeChildrenByKind, SyntaxToken},
     SyntaxKind,
 };
 
@@ -99,13 +99,13 @@ pub trait AstToken {
 /// An iterator over `SyntaxNode` children of a particular AST type.
 #[derive(Clone, Debug)]
 pub struct AstChildren<N> {
-    inner: SyntaxNodeChildrenMatching,
+    inner: SyntaxNodeChildrenByKind,
     ph: PhantomData<N>,
 }
 
-impl<N: AstNode> AstChildren<N> {
+impl<N: 'static + AstNode> AstChildren<N> {
     fn new(parent: &SyntaxNode) -> Self {
-        AstChildren { inner: parent.children().by_kind(N::can_cast_rowan), ph: PhantomData }
+        AstChildren { inner: parent.children().by_kind(&N::can_cast_rowan), ph: PhantomData }
     }
 }
 
@@ -121,11 +121,11 @@ mod support {
         AstChildren, AstNode, Language, RustLanguage, SyntaxKind, SyntaxNode, SyntaxToken,
     };
 
-    pub(super) fn child<N: AstNode>(parent: &SyntaxNode) -> Option<N> {
-        parent.children().by_kind(N::can_cast_rowan).next().map(|it| N::cast(it).unwrap())
+    pub(super) fn child<N: 'static + AstNode>(parent: &SyntaxNode) -> Option<N> {
+        parent.children().by_kind(&N::can_cast_rowan).next().map(|it| N::cast(it).unwrap())
     }
 
-    pub(super) fn children<N: AstNode>(parent: &SyntaxNode) -> AstChildren<N> {
+    pub(super) fn children<N: 'static + AstNode>(parent: &SyntaxNode) -> AstChildren<N> {
         AstChildren::new(parent)
     }
 
