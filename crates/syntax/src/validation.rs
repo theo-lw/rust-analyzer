@@ -23,7 +23,7 @@ pub(crate) fn validate(root: &SyntaxNode) -> Vec<SyntaxError> {
     // * Add validation of doc comments are being attached to nodes
 
     let mut errors = Vec::new();
-    for node in root.descendants() {
+    for node in root.descendants_pooled(128) {
         match_ast! {
             match node {
                 ast::Literal(it) => validate_literal(it, &mut errors),
