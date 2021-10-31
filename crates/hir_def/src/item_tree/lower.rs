@@ -165,7 +165,7 @@ impl<'a> Ctx<'a> {
             block_stack.push(self.source_ast_id_map.ast_id(&block));
         }
 
-        for event in container.preorder_pooled(256).skip(1) {
+        for event in container.preorder().skip(1) {
             match event {
                 WalkEvent::Enter(node) => {
                     match_ast! {
