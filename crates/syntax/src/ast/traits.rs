@@ -3,7 +3,7 @@
 //! The implementations are usually trivial, and live in generated.rs
 use crate::{
     ast::{self, support, AstChildren, AstNode, AstToken},
-    syntax_node::SyntaxElementChildren,
+    syntax_node::SyntaxElementChildrenByKind,
     SyntaxToken, T,
 };
 
@@ -72,13 +72,13 @@ pub trait HasAttrs: AstNode {
 
 pub trait HasDocComments: HasAttrs {
     fn doc_comments(&self) -> CommentIter {
-        CommentIter { iter: self.syntax().children_with_tokens() }
+        CommentIter { iter: self.syntax().children_with_tokens().by_kind(&ast::Comment::can_cast_rowan) }
     }
 }
 
 impl CommentIter {
     pub fn from_syntax_node(syntax_node: &ast::SyntaxNode) -> CommentIter {
-        CommentIter { iter: syntax_node.children_with_tokens() }
+        CommentIter { iter: syntax_node.children_with_tokens().by_kind(&ast::Comment::can_cast_rowan) }
     }
 
     #[cfg(test)]
@@ -96,7 +96,7 @@ impl CommentIter {
 }
 
 pub struct CommentIter {
-    iter: SyntaxElementChildren,
+    iter: SyntaxElementChildrenByKind,
 }
 
 impl Iterator for CommentIter {

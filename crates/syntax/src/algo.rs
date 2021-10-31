@@ -8,9 +8,11 @@ use rustc_hash::FxHashMap;
 use text_edit::TextEditBuilder;
 
 use crate::{
-    AstNode, Direction, NodeOrToken, SyntaxElement, SyntaxKind, SyntaxNode, SyntaxToken, TextRange,
-    TextSize,
+    syntax_node::RustLanguage, AstNode, Direction, NodeOrToken, SyntaxElement, SyntaxKind,
+    SyntaxNode, SyntaxToken, TextRange, TextSize,
 };
+
+use rowan::Language;
 
 /// Returns ancestors of the node at the offset, sorted by length. This should
 /// do the right thing at an edge, e.g. when searching for expressions at `{
@@ -99,7 +101,10 @@ pub fn neighbor<T: AstNode>(me: &T, direction: Direction) -> Option<T> {
 }
 
 pub fn has_errors(node: &SyntaxNode) -> bool {
-    node.children().any(|it| it.kind() == SyntaxKind::ERROR)
+    node.children()
+        .by_kind(&|it| RustLanguage::kind_from_raw(it) == SyntaxKind::ERROR)
+        .next()
+        .is_some()
 }
 
 type FxIndexMap<K, V> = IndexMap<K, V, BuildHasherDefault<rustc_hash::FxHasher>>;

@@ -32,6 +32,7 @@ pub type SyntaxElement = rowan::SyntaxElement<RustLanguage>;
 pub type SyntaxNodeChildren = rowan::SyntaxNodeChildren<RustLanguage>;
 pub type SyntaxNodeChildrenByKind = rowan::SyntaxNodeChildrenByKind<'static, RustLanguage>;
 pub type SyntaxElementChildren = rowan::SyntaxElementChildren<RustLanguage>;
+pub type SyntaxElementChildrenByKind = rowan::SyntaxElementChildrenByKind<'static, RustLanguage>;
 pub type PreorderWithTokens = rowan::api::PreorderWithTokens<RustLanguage>;
 
 #[derive(Default)]
